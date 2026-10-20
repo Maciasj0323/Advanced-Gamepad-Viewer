@@ -19,7 +19,7 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - run: npm run build -- --base=/gamepad-overlay/
+      - run: npm run build -- --base=/Advanced-Gamepad-Viewer/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
