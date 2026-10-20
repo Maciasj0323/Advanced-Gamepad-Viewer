@@ -8,6 +8,7 @@ import { useGamepadList, useGamepadState } from './useGamepad'
 import { useHeldInputs } from './useInput'
 import { useOnScreen } from './useOnScreen'
 import { useArtwork, useArtworkUrls } from './artworkStore'
+import ProfileBackup from './ProfileBackup'
 
 function readFlag(key: string, fallback: boolean): boolean {
   try {
@@ -91,7 +92,7 @@ export default function App() {
                 /* storage unavailable: choice just won't be remembered */
               }
             }}
-          >
+          > 
             <option value="">Auto (recommended)</option>
             {pads.map((p) => (
               <option key={p.index} value={p.id}>
@@ -156,6 +157,8 @@ export default function App() {
           Changing the controller resets which extra buttons are visible to that controller's defaults.
         </small>
       </section>
+
+      <ProfileBackup active={active} />
 
       <AdvancedOptions profile={active} />
 

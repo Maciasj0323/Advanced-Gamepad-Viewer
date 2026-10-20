@@ -190,3 +190,26 @@ export function setActiveProfileId(id: string): Promise<void> {
     await (await getDb()).put('meta', id, 'activeProfileId')
   })
 }
+/**
+ * Saves imported profiles and their images in ONE transaction.
+ * If anything fails, nothing is saved.
+ */
+export function importProfiles(profiles: Profile[], artwork: ArtworkRecord[]): Promise<void> {
+  return guard('Importing profiles', async () => {
+    const db = await getDb()
+    const tx = db.transaction(['profiles', 'artwork'], 'readwrite')
+    tx.done.catch(() => undefined) // avoid an unhandled rejection if we abort
+    try {
+      for (const record of artwork) await tx.objectStore('artwork').put(record)
+      for (const profile of profiles) await tx.objectStore('profiles').put(profile)
+      await tx.done
+    } catch (e) {
+      try {
+        tx.abort()
+      } catch {
+        /* already finished */
+      }
+      throw e
+    }
+  })
+}

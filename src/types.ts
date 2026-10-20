@@ -129,6 +129,7 @@ export type ControllerType =
   | 'ps4'
   | 'razer-wolverine'
   | 'scuf-envision'
+  | 'gamesir-tarantula-8k'
 
 export interface OverlaySettings {
   scale: number

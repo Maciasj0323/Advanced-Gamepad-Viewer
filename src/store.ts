@@ -2,6 +2,13 @@ import { create } from 'zustand'
 import { prepareImage } from './artwork'
 import { useArtwork } from './artworkStore'
 import {
+  buildExport,
+  parseBackup,
+  prepareImport,
+  serializeBackup,
+  type ImportResult,
+} from './backup'
+import {
   createProfile,
   getArtworkRefs,
   newId,
@@ -50,6 +57,10 @@ interface ProfileState {
   /** Returns an error message to show, or null when the image was added. */
   setArtwork: (owner: ArtOwner, slot: ArtSlot, file: File) => Promise<string | null>
   clearArtwork: (owner: ArtOwner, slot: ArtSlot) => void
+  /** Builds the text of a backup file for the given profiles. */
+  exportProfiles: (ids: string[]) => Promise<string>
+  /** Adds the profiles in a backup file as new profiles. */
+  importBackup: (text: string) => Promise<ImportResult>
 }
 
 const message = (e: unknown) => (e instanceof Error ? e.message : String(e))
@@ -221,5 +232,58 @@ export const useProfiles = create<ProfileState>((set, get) => {
         await db.deleteArtwork(oldId)
       })
     },
+
+    exportProfiles: async (ids) => {
+      // Wait for pending saves so the export includes the very latest changes.
+      await chain.catch(() => undefined)
+      const chosen = get().profiles.filter((p) => ids.includes(p.id))
+      if (chosen.length === 0) throw new Error('There is nothing to export.')
+      const records: ArtworkRecord[] = []
+      for (const profile of chosen) {
+        for (const profileArtId of artworkIdsOf(profile)) {
+          const record = await db.getArtwork(profileArtId)
+          if (record) records.push(record)
+        }
+      }
+      return serializeBackup(buildExport(chosen, records))
+    },
+
+    importBackup: (text) =>
+      new Promise<ImportResult>((resolve) => {
+        enqueue(async () => {
+          try {
+            const parsed = parseBackup(text)
+            if ('error' in parsed) {
+              resolve({ ok: false, error: parsed.error })
+              return
+            }
+            const prepared = prepareImport(parsed.file, get().profiles.map((p) => p.name))
+            await db.importProfiles(prepared.profiles, prepared.artwork)
+            const first = prepared.profiles[0]
+            set({ profiles: [...get().profiles, ...prepared.profiles], activeId: first.id })
+            await db.setActiveProfileId(first.id)
+            resolve({
+              ok: true,
+              names: prepared.profiles.map((p) => p.name),
+              skippedImages: prepared.skippedImages,
+            })
+          } catch (e) {
+            resolve({ ok: false, error: `Could not import: ${message(e)}` })
+          }
+        })
+      }),
   }
 })
+
+function artworkIdsOf(profile: Profile): string[] {
+  const ids = new Set<string>()
+  for (const part of Object.values(profile.parts)) {
+    if (part.artwork.normal) ids.add(part.artwork.normal)
+    if (part.artwork.pressed) ids.add(part.artwork.pressed)
+  }
+  for (const button of Object.values(profile.buttons)) {
+    if (button.artwork.normal) ids.add(button.artwork.normal)
+    if (button.artwork.pressed) ids.add(button.artwork.pressed)
+  }
+  return [...ids]
+}

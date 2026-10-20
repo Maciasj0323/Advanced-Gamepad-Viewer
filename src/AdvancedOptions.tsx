@@ -24,8 +24,10 @@ import {
   type ArtOwner,
   type ArtSlot,
   type BasePartId,
+  type ExtraButtonConfig,
   type ExtraButtonId,
   type GroupId,
+  type PartConfig,
   type Profile,
   type SubGroupId,
   type Transform,
@@ -194,8 +196,9 @@ export default function AdvancedOptions({ profile }: { profile: Profile }) {
     }
   }
 
-  // Colors and images always belong to the selected part itself, never to a group.
-  const own = isGroup(selected)
+  // Colors and images belong to the selected part itself, never to a group.
+  // `own` is null while a group is selected, so every use below is inside a null check.
+  const own: PartConfig | ExtraButtonConfig | null = isGroup(selected)
     ? null
     : isExtra(selected)
       ? profile.buttons[selected]
@@ -207,9 +210,9 @@ export default function AdvancedOptions({ profile }: { profile: Profile }) {
       ? { kind: 'extra', id: selected }
       : { kind: 'part', id: selected }
 
-  const artOn = own ? hasArt(own.artwork) : false
+  const artOn = own !== null && hasArt(own.artwork)
 
-    const setOwnColors = (patch: { borderColor?: string; pressedColor?: string; fillColor?: string }) => {
+  const setOwnColors = (patch: { borderColor?: string; pressedColor?: string; fillColor?: string }) => {
     if (isGroup(selected)) return
     if (isExtra(selected)) {
       updateButton(selected, patch)
@@ -233,7 +236,7 @@ export default function AdvancedOptions({ profile }: { profile: Profile }) {
       : selected
     : parentGroup
 
-  const extra = isExtra(selected) ? profile.buttons[selected] : null
+  const extra: ExtraButtonConfig | null = isExtra(selected) ? profile.buttons[selected] : null
   const shared = isExtra(selected) ? sharedWith(profile.buttons, selected) : []
 
   const slider = (
@@ -293,15 +296,8 @@ export default function AdvancedOptions({ profile }: { profile: Profile }) {
               <label>
                 Pressed color{' '}
                 <input
-                  type="color" value={own.pressedColor}
-                  onChange={(e) => setOwnColors({ pressedColor: e.target.value })}
-                />
-              </label>
-              <label>
-                Fill color{' '}
-                <input
-                  type="color" value={own.fillColor} disabled={artOn}
-                  onChange={(e) => setOwnColors({ fillColor: e.target.value })}
+                  type="color" value={settings.pressedColor}
+                  onChange={(e) => updateSettings({ pressedColor: e.target.value })}
                 />
               </label>
               <label>
@@ -337,10 +333,16 @@ export default function AdvancedOptions({ profile }: { profile: Profile }) {
             </small>
           )}
 
-                    {/* ---------- Sticks ---------- */}
+          {/* ---------- Sticks ---------- */}
           <h3 style={{ fontSize: 16, margin: '16px 0 6px' }}>Sticks</h3>
-          {slider('Deadzone', Math.round(settings.deadzone * 100), 0, Math.round(MAX_DEADZONE * 100), 1, '%', (v) =>
-            updateSettings({ deadzone: v / 100 }),
+          {slider(
+            'Deadzone',
+            Math.round(settings.deadzone * 100),
+            0,
+            Math.round(MAX_DEADZONE * 100),
+            1,
+            '%',
+            (v) => updateSettings({ deadzone: v / 100 }),
           )}
           {slider('Stick travel', settings.stickTravel, MIN_STICK_TRAVEL, MAX_STICK_TRAVEL, 1, '', (v) =>
             updateSettings({ stickTravel: v }),
@@ -354,6 +356,36 @@ export default function AdvancedOptions({ profile }: { profile: Profile }) {
           </small>
 
           {/* ---------- Additional buttons ---------- */}
+          <h3 style={{ fontSize: 16, margin: '16px 0 6px' }}>Additional buttons</h3>
+          <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+            <thead>
+              <tr>
+                <th align="left">Button</th>
+                <th>Visible</th>
+                <th align="left">Binding</th>
+              </tr>
+            </thead>
+            <tbody>
+              {EXTRA_BUTTON_IDS.map((id) => (
+                <tr key={id} style={{ background: id === selected ? '#ffd23f22' : undefined }}>
+                  <td>
+                    <button onClick={() => select(id)} style={{ fontWeight: id === selected ? 700 : 400 }}>
+                      {EXTRA_BUTTON_LABELS[id]}
+                    </button>
+                  </td>
+                  <td align="center">
+                    <input
+                      type="checkbox"
+                      aria-label={`${EXTRA_BUTTON_LABELS[id]} visible`}
+                      checked={profile.buttons[id].visible}
+                      onChange={(e) => updateButton(id, { visible: e.target.checked })}
+                    />
+                  </td>
+                  <td>{formatBinding(profile.buttons[id].binding)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
 
           {/* ---------- Selected part ---------- */}
           <h3 style={{ fontSize: 16, margin: '16px 0 6px' }}>Size, shape and position</h3>
@@ -464,14 +496,14 @@ export default function AdvancedOptions({ profile }: { profile: Profile }) {
             </small>
           )}
 
-          {/* ---------- Own colors (only when not applied to the whole overlay) ---------- */}
+          {/* ---------- This part's own colors ---------- */}
           {own && artOn && (
             <small style={{ display: 'block', marginTop: 8 }}>
-              This part is showing your image, so its shape and border are not drawn. The pressed color is
-              only used to tint the image when there is no pressed image.
+              This part is showing your image, so its shape, border and fill are not drawn. The pressed
+              color is only used to tint the image when there is no pressed image.
             </small>
           )}
-                    {own && !settings.colorsApplyToAll && (
+          {own && !settings.colorsApplyToAll && (
             <div style={{ display: 'flex', gap: 16, alignItems: 'center', margin: '12px 0', flexWrap: 'wrap' }}>
               <label>
                 Border color{' '}
@@ -499,7 +531,7 @@ export default function AdvancedOptions({ profile }: { profile: Profile }) {
                   setOwnColors({
                     borderColor: DEFAULT_BORDER_COLOR,
                     pressedColor: DEFAULT_PRESSED_COLOR,
-                    fillColor: selected === 'shell' ? DEFAULT_SHELL_FILL_COLOR : DEFAULT_FILL_COLOR,
+                    fillColor: isShell ? DEFAULT_SHELL_FILL_COLOR : DEFAULT_FILL_COLOR,
                   })
                 }
               >

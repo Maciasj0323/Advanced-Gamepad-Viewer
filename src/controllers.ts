@@ -34,6 +34,12 @@ export const CONTROLLERS: Record<ControllerType, ControllerDefinition> = {
     family: 'playstation',
     defaultVisible: ['paddle1', 'paddle2', 'paddle3', 'paddle4', 'sideLeft', 'sideRight'],
   },
+    'gamesir-tarantula-8k': {
+    type: 'gamesir-tarantula-8k',
+    label: 'Gamesir Tarantula 8k',
+    family: 'playstation',
+    defaultVisible: ['paddle1', 'paddle2', 'paddle3', 'paddle4', 'clawLeft', 'clawRight'],
+  },
 }
 
 export const CONTROLLER_LIST: ControllerDefinition[] = Object.values(CONTROLLERS)
