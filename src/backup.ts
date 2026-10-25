@@ -18,7 +18,7 @@ export const BACKUP_FORMAT = 'gamepad-overlay-profile' as const
 export const BACKUP_VERSION = 1
 export const MAX_BACKUP_BYTES = 100 * 1024 * 1024
 export const MAX_PROFILES_PER_FILE = 50
-const MAX_IMAGES_PER_PROFILE = 60
+const MAX_IMAGES_PER_PROFILE = 80
 
 export interface BackupImage {
   id: string

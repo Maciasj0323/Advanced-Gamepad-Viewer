@@ -1,10 +1,11 @@
+import type { ControllerFamily } from './layouts'
 import type { ControllerType, ExtraButtonId } from './types'
 
 export interface ControllerDefinition {
   type: ControllerType
   label: string
   /** Which built-in base layout to draw. */
-  family: 'xbox' | 'playstation'
+  family: ControllerFamily
   /** Additional buttons that are visible by default for this controller. */
   defaultVisible: ExtraButtonId[]
 }
@@ -34,17 +35,27 @@ export const CONTROLLERS: Record<ControllerType, ControllerDefinition> = {
     family: 'playstation',
     defaultVisible: ['paddle1', 'paddle2', 'paddle3', 'paddle4', 'sideLeft', 'sideRight'],
   },
-    'gamesir-tarantula-8k': {
+  'gamesir-tarantula-8k': {
     type: 'gamesir-tarantula-8k',
     label: 'Gamesir Tarantula 8k',
-    family: 'playstation',
-    defaultVisible: ['paddle1', 'paddle2', 'paddle3', 'paddle4', 'clawLeft', 'clawRight'],
+    family: 'gamesir',
+    defaultVisible: [
+      'paddle1',
+      'paddle2',
+      'paddle3',
+      'paddle4',
+      'clawLeft',
+      'clawRight',
+      'mid1',
+      'mid2',
+      'mid3',
+      'mid4',
+    ],
   },
 }
 
 export const CONTROLLER_LIST: ControllerDefinition[] = Object.values(CONTROLLERS)
 
-/** Starting positions for the extras (0..1 of the overlay). Users adjust them. */
 /** Starting positions for the extras (0..1 of the overlay). Users adjust them. */
 export const DEFAULT_POSITIONS: Record<ExtraButtonId, { yaw: number; pitch: number }> = {
   // Left handle: P2 near the bottom center, P1 above it, clear of the side button.
@@ -58,4 +69,9 @@ export const DEFAULT_POSITIONS: Record<ExtraButtonId, { yaw: number; pitch: numb
   clawRight: { yaw: 0.88, pitch: 0.115 },
   sideLeft: { yaw: 0.09, pitch: 0.5 },
   sideRight: { yaw: 0.91, pitch: 0.5 },
+  // GameSir C1-C4: the arc of small buttons across the top middle.
+  mid1: { yaw: 0.332, pitch: 0.266 },
+  mid2: { yaw: 0.387, pitch: 0.311 },
+  mid3: { yaw: 0.613, pitch: 0.311 },
+  mid4: { yaw: 0.668, pitch: 0.266 },
 }

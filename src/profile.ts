@@ -88,7 +88,7 @@ export function isHexColor(v: unknown): v is string {
 
 const color = (v: unknown, fallback: string): string => (isHexColor(v) ? v : fallback)
 
-/** Builds eight brand-new, unshared button configs for a controller type. */
+/** Builds brand-new, unshared button configs for a controller type. */
 export function createButtons(
   type: ControllerType,
 ): Record<ExtraButtonId, ExtraButtonConfig> {
@@ -146,7 +146,7 @@ export function createProfile(name: string, type: ControllerType): Profile {
 
 // Earlier default spots for the extras. A profile that still has one of these
 // (so the user never moved it) is moved to the new default when it is loaded.
-type Spots = Record<ExtraButtonId, { yaw: number; pitch: number }>
+type Spots = Partial<Record<ExtraButtonId, { yaw: number; pitch: number }>>
 const OLD_EXTRA_DEFAULTS: Spots[] = [
   {
     paddle1: { yaw: 0.4, pitch: 0.85 },
@@ -173,7 +173,10 @@ const OLD_PS_BACK_START = { back: { x: 215, y: 150 }, start: { x: 385, y: 150 } 
 
 const near = (a: number, b: number) => Math.abs(a - b) < 0.0005
 const isOldExtraDefault = (id: ExtraButtonId, yaw: number, pitch: number) =>
-  OLD_EXTRA_DEFAULTS.some((set) => near(set[id].yaw, yaw) && near(set[id].pitch, pitch))
+  OLD_EXTRA_DEFAULTS.some((set) => {
+    const spot = set[id]
+    return spot !== undefined && near(spot.yaw, yaw) && near(spot.pitch, pitch)
+  })
 
 /**
  * Fills in anything missing from a profile saved by an older version.
@@ -181,7 +184,7 @@ const isOldExtraDefault = (id: ExtraButtonId, yaw: number, pitch: number) =>
  *  - before schema 3: bumper positions reset (the bumpers changed shape)
  *  - before schema 4: extras and PlayStation View/Menu buttons still sitting
  *    on their old default spot move to the new default spot
- *  - fill colors, stick travel and the other newer settings get defaults
+ *  - anything newer (fill colors, stick travel, the C1-C4 buttons) gets defaults
  */
 export function normalizeProfile(p: Profile): Profile {
   const type: ControllerType = p.controllerType in CONTROLLERS ? p.controllerType : 'xbox-one'
@@ -379,8 +382,8 @@ export function withSettingsPatch(
 /**
  * Switches the base controller. Applies the new controller's default
  * extra-button VISIBILITY. If the layout family changes (Xbox-style <->
- * PlayStation-style), built-in part and group positions reset to the new
- * layout; size, rotation, colors, images, bindings and extra-button
+ * PlayStation-style <-> GameSir), built-in part and group positions reset to
+ * the new layout; size, rotation, colors, images, bindings and extra-button
  * positions are kept.
  */
 export function withControllerType(profile: Profile, type: ControllerType): Profile {

@@ -4,11 +4,12 @@ import { EXTRA_BUTTON_IDS, type ExtraButtonConfig, type ExtraButtonId } from './
 
 type Buttons = Record<ExtraButtonId, ExtraButtonConfig>
 
-export type ExtraKind = 'paddle' | 'claw' | 'side'
+export type ExtraKind = 'paddle' | 'claw' | 'side' | 'mid'
 
 export function extraKind(id: ExtraButtonId): ExtraKind {
   if (id.startsWith('paddle')) return 'paddle'
   if (id.startsWith('claw')) return 'claw'
+  if (id.startsWith('mid')) return 'mid'
   return 'side'
 }
 
@@ -21,6 +22,10 @@ export const EXTRA_SHORT_LABELS: Record<ExtraButtonId, string> = {
   clawRight: 'RC',
   sideLeft: 'LS',
   sideRight: 'RS',
+  mid1: 'C1',
+  mid2: 'C2',
+  mid3: 'C3',
+  mid4: 'C4',
 }
 
 /** Default size of each kind of extra button, in canvas units. */
@@ -28,6 +33,34 @@ export const EXTRA_BASE_SIZE: Record<ExtraKind, { w: number; h: number }> = {
   paddle: { w: 28, h: 52 },
   claw: { w: 90, h: 22 },
   side: { w: 42, h: 42 },
+  mid: { w: 34, h: 16 },
+}
+
+/** Label size of each kind of extra button. */
+export const EXTRA_FONT_SIZE: Record<ExtraKind, number> = {
+  paddle: 13,
+  claw: 13,
+  side: 13,
+  mid: 9,
+}
+
+/**
+ * A tilt built into how a button is drawn (the C buttons slope like the real
+ * ones). The Rotation slider adds to it, and its 0 means "as drawn".
+ */
+export const EXTRA_BASE_ROTATION: Record<ExtraButtonId, number> = {
+  paddle1: 0,
+  paddle2: 0,
+  paddle3: 0,
+  paddle4: 0,
+  clawLeft: 0,
+  clawRight: 0,
+  sideLeft: 0,
+  sideRight: 0,
+  mid1: 35,
+  mid2: 35,
+  mid3: -35,
+  mid4: -35,
 }
 
 /** Final drawn size: default size x scale x width/height multipliers. */

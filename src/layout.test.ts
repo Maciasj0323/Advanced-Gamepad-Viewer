@@ -36,7 +36,7 @@ describe('every part can be moved, scaled, stretched and rotated', () => {
     expect(BASE_PART_IDS).toHaveLength(19)
     expect(Object.keys(p.parts)).toHaveLength(19)
     expect(Object.keys(p.groups)).toHaveLength(3)
-    expect(Object.keys(p.buttons)).toHaveLength(8)
+    expect(Object.keys(p.buttons)).toHaveLength(12)
   })
 
   it('starts every part and group at its layout position, normal size, no rotation', () => {

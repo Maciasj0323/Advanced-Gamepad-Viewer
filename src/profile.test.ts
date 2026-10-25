@@ -30,8 +30,8 @@ describe('controller defaults', () => {
 
   it('has exactly eight independent buttons', () => {
     const p = createProfile('x', 'xbox-one')
-    expect(Object.keys(p.buttons)).toHaveLength(8)
-    expect(new Set(EXTRA_BUTTON_IDS).size).toBe(8)
+    expect(Object.keys(p.buttons)).toHaveLength(12)
+    expect(new Set(EXTRA_BUTTON_IDS).size).toBe(12)
     // No shared object references between buttons
     expect(p.buttons.paddle1).not.toBe(p.buttons.paddle2)
   })

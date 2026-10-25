@@ -8,6 +8,10 @@ export const EXTRA_BUTTON_IDS = [
   'clawRight',
   'sideLeft',
   'sideRight',
+  'mid1',
+  'mid2',
+  'mid3',
+  'mid4',
 ] as const
 
 export type ExtraButtonId = (typeof EXTRA_BUTTON_IDS)[number]
@@ -21,6 +25,10 @@ export const EXTRA_BUTTON_LABELS: Record<ExtraButtonId, string> = {
   clawRight: 'Right claw-grip bumper',
   sideLeft: 'Left side action button',
   sideRight: 'Right side action button',
+  mid1: 'Middle button C1',
+  mid2: 'Middle button C2',
+  mid3: 'Middle button C3',
+  mid4: 'Middle button C4',
 }
 
 // A binding is either a keyboard key (KeyboardEvent.code, e.g. "KeyR", "Space")
@@ -57,7 +65,7 @@ export interface ExtraButtonConfig extends Transform {
   binding: Binding | null
   /** Uploaded images. When any is set, the built-in shape is not drawn. */
   artwork: ArtworkRefs
-    /** Used when colors are not applied to the whole overlay. */
+  /** Used when colors are not applied to the whole overlay. */
   borderColor: string
   pressedColor: string
   fillColor: string
@@ -135,7 +143,7 @@ export interface OverlaySettings {
   scale: number
   deadzone: number
   opacity: number
-    /** true: every part uses the overlay colors below. */
+  /** true: every part uses the overlay colors below. */
   colorsApplyToAll: boolean
   borderColor: string
   pressedColor: string
@@ -148,7 +156,7 @@ export interface OverlaySettings {
 }
 
 // ---------- Profiles ----------
-export const SCHEMA_VERSION = 5
+export const SCHEMA_VERSION = 6
 
 export interface Profile {
   id: string
@@ -179,11 +187,11 @@ export interface ArtworkRecord {
 
 export const DEFAULT_BORDER_COLOR = '#6b7280'
 export const DEFAULT_PRESSED_COLOR = '#ffd23f'
-export const MIN_SCALE = 0.1
-export const MAX_SCALE = 5
 export const DEFAULT_FILL_COLOR = '#3a3f4b'
 export const DEFAULT_SHELL_FILL_COLOR = '#1b1e25'
 export const DEFAULT_STICK_TRAVEL = 10
 export const MIN_STICK_TRAVEL = 5
 export const MAX_STICK_TRAVEL = 30
 export const MAX_DEADZONE = 0.6
+export const MIN_SCALE = 0.1
+export const MAX_SCALE = 5

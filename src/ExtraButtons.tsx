@@ -1,7 +1,9 @@
 import { resolveArt } from './artwork'
 import {
   contrastText,
+  EXTRA_BASE_ROTATION,
   EXTRA_BASE_SIZE,
+  EXTRA_FONT_SIZE,
   EXTRA_SHORT_LABELS,
   extraKind,
   extraSize,
@@ -38,7 +40,7 @@ export default function ExtraButtons({ buttons, settings, down, urls }: Props) {
         const kind = extraKind(id)
         const view = resolveArt(b.artwork, on)
         const label = `${EXTRA_BUTTON_LABELS[id]}${on ? ' (pressed)' : ''}`
-        const place = `translate(${b.yaw * CANVAS_W} ${b.pitch * CANVAS_H}) rotate(${b.rotation})`
+        const place = `translate(${b.yaw * CANVAS_W} ${b.pitch * CANVAS_H}) rotate(${b.rotation + EXTRA_BASE_ROTATION[id]})`
 
         if (view.kind !== 'shape') {
           const url = view.kind === 'image' ? urls[view.id] : undefined
@@ -68,12 +70,12 @@ export default function ExtraButtons({ buttons, settings, down, urls }: Props) {
           <g key={id} role="img" aria-label={label} data-extra={id} data-lit={on} transform={place}>
             <rect
               x={-w / 2} y={-h / 2} width={w} height={h} rx={rx}
-              fill={on ? c.pressed : c.fill} stroke={c.border} strokeWidth={3}
+              fill={on ? c.pressed : c.fill} stroke={c.border} strokeWidth={kind === 'mid' ? 2 : 3}
             />
             <text
               textAnchor="middle"
               dominantBaseline="central"
-              fontSize={13 * b.scale}
+              fontSize={EXTRA_FONT_SIZE[kind] * b.scale}
               fontWeight={700}
               fill={contrastText(on ? c.pressed : c.fill)}
               style={{ fontFamily: 'system-ui, sans-serif' }}

@@ -3,7 +3,7 @@ import type { BasePartId, GroupId } from './types'
 export const CANVAS_W = 600
 export const CANVAS_H = 440
 
-export type ControllerFamily = 'xbox' | 'playstation'
+export type ControllerFamily = 'xbox' | 'playstation' | 'gamesir'
 
 export interface Pt {
   x: number
@@ -127,6 +127,13 @@ const PS_EDGE: Curve = [
   { x: 400, y: 95 },
   { x: 440, y: 110 },
 ]
+// The GameSir shell's top edge. The shell outline starts with this exact curve.
+const GS_EDGE: Curve = [
+  { x: 94, y: 125 },
+  { x: 150, y: 82 },
+  { x: 450, y: 82 },
+  { x: 506, y: 125 },
+]
 
 const XBOX_FACE: FaceSet = {
   south: { x: 425, y: 195, label: 'A' },
@@ -139,6 +146,12 @@ const PS_FACE: FaceSet = {
   east: { x: 455, y: 170, label: '○' },
   west: { x: 395, y: 170, label: '□' },
   north: { x: 425, y: 140, label: '△' },
+}
+const GS_FACE: FaceSet = {
+  south: { x: 450, y: 199, label: 'A' },
+  east: { x: 481, y: 168, label: 'B' },
+  west: { x: 419, y: 168, label: 'X' },
+  north: { x: 450, y: 137, label: 'Y' },
 }
 
 // Original shapes drawn for this project, in a 600 x 440 canvas.
@@ -178,6 +191,26 @@ export const LAYOUTS: Record<ControllerFamily, Layout> = {
     rb: edgeStrip(PS_EDGE, 0.62, 1, BUMPER_THICKNESS),
     lt: { cx: 195, cy: 44, w: 78, h: 36, rotate: -8 },
     rt: { cx: 405, cy: 44, w: 78, h: 36, rotate: 8 },
+  },
+  // Based on the GameSir Tarantula picture: wide shoulders, D-pad top left,
+  // symmetric sticks, A/B/X/Y top right, three small buttons and the logo in the middle.
+  gamesir: {
+    body: 'M94 125 C150 82 450 82 506 125 C540 190 556 280 549 319 C543 368 518 392 495 390 C468 388 452 360 440 330 C428 300 420 284 400 281 L200 281 C180 284 172 300 160 330 C148 360 132 388 105 390 C82 392 57 368 51 319 C44 280 60 190 94 125 Z',
+    bodyAnchor: { x: 300, y: 240 },
+    topEdge: GS_EDGE,
+    face: GS_FACE,
+    faceCenter: centerOf(GS_FACE),
+    dpad: { x: 150, y: 168 },
+    leftStick: { x: 223, y: 230 },
+    rightStick: { x: 376, y: 230 },
+    back: { x: 274, y: 161, label: '' },
+    start: { x: 326, y: 161, label: '' },
+    home: { x: 300, y: 220 },
+    touchpad: null,
+    lb: edgeStrip(GS_EDGE, 0, 0.3, BUMPER_THICKNESS),
+    rb: edgeStrip(GS_EDGE, 0.7, 1, BUMPER_THICKNESS),
+    lt: { cx: 150, cy: 50, w: 78, h: 36, rotate: -8 },
+    rt: { cx: 450, cy: 50, w: 78, h: 36, rotate: 8 },
   },
 }
 
