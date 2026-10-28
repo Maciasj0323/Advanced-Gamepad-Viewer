@@ -1,6 +1,5 @@
 /* Dark panel look inspired by the GameSir Nexus app: grey cards, red accents, pill buttons. */
 :root {
-  color-scheme: dark;
   --bg-top: #3d3d3d;
   --bg-bottom: #232323;
   --panel: #363636;
@@ -14,6 +13,9 @@
   font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
 }
 
+html:not([data-overlay]) { color-scheme: dark; }
+html[data-overlay] { color-scheme: normal; }
+
 * { box-sizing: border-box; }
 html, body { margin: 0; min-height: 100%; }
 body {
@@ -24,8 +26,13 @@ body {
 #root { min-height: 100vh; }
 
 /* OBS view: nothing but the overlay, on a transparent (or chosen) background. */
-html[data-overlay], html[data-overlay] body {
+html[data-overlay],
+html[data-overlay] body,
+html[data-overlay] #root {
   background: var(--overlay-bg, transparent) !important;
+  background-color: var(--overlay-bg, transparent) !important;
+  background-image: none !important;
+  margin: 0;
   overflow: hidden;
 }
 

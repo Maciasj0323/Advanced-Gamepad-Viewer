@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildObsUrl, chooseOverlayProfile, parseOverlayParams } from './overlayMode'
+import { buildObsUrl, chooseOverlayProfile, parseEmbedded, parseOverlayParams } from './overlayMode'
 import { createProfile } from './profile'
 
 describe('reading the overlay address', () => {
@@ -25,7 +25,7 @@ describe('reading the overlay address', () => {
   })
 })
 
-describe('building the OBS link', () => {
+describe('building the short OBS link', () => {
   it('round-trips names with spaces and symbols', () => {
     const name = 'my profile+1 & ü'
     const url = buildObsUrl('https://x.test/app/', name, '#00FF00')
@@ -46,13 +46,67 @@ describe('choosing the profile to show', () => {
     expect(chooseOverlayProfile([a, b], '  TYNZA ', b.id)).toEqual({ profile: a, missing: false })
   })
 
-  it('falls back to the saved active profile, then the first, and says it was missing', () => {
-    expect(chooseOverlayProfile([a, b], 'nope', b.id)).toEqual({ profile: b, missing: true })
-    expect(chooseOverlayProfile([a, b], 'nope', null)).toEqual({ profile: a, missing: true })
+  it('never guesses: a name that is not found shows no profile', () => {
+    expect(chooseOverlayProfile([a, b], 'nope', b.id)).toEqual({ profile: null, missing: true })
+  })
+
+  it('with no name it uses the saved active profile, then the first', () => {
     expect(chooseOverlayProfile([a, b], null, b.id)).toEqual({ profile: b, missing: false })
+    expect(chooseOverlayProfile([a, b], null, null)).toEqual({ profile: a, missing: false })
   })
 
   it('returns no profile when there are none', () => {
     expect(chooseOverlayProfile([], 'x', null).profile).toBeNull()
+    expect(chooseOverlayProfile([], null, null)).toEqual({ profile: null, missing: false })
+  })
+})
+
+describe('data baked into an overlay file', () => {
+  it('accepts a valid token and background', () => {
+    expect(parseEmbedded({ token: 'g.abc_-', background: '#00FF00' })).toEqual({
+      token: 'g.abc_-',
+      background: '#00ff00',
+    })
+    expect(parseEmbedded({ token: 'j.abc', background: null })).toEqual({ token: 'j.abc', background: null })
+  })
+
+  it('ignores anything that is not a valid token', () => {
+    for (const bad of [undefined, null, 5, 'x', {}, { token: 5 }, { token: 'x.abc' }, { token: 'g.a b' }, { token: 'g.<script>' }]) {
+      expect(parseEmbedded(bad)).toBeNull()
+    }
+    expect(parseEmbedded({ token: 'g.abc', background: 'nope' })?.background).toBeNull()
+  })
+})
+
+describe('helper settings in overlay addresses', () => {
+  const CODE = 'a1b2c3d4e5f60718293a4b5c'
+
+  it('are read from ?helper= and ?hport=', () => {
+    expect(parseOverlayParams(`?overlay&helper=${CODE}`).helper).toEqual({ code: CODE, port: 8765 })
+    expect(parseOverlayParams(`?overlay&helper=${CODE}&hport=9000`).helper).toEqual({ code: CODE, port: 9000 })
+  })
+
+  it('are ignored when invalid or missing', () => {
+    expect(parseOverlayParams('?overlay&helper=short').helper).toBeUndefined()
+    expect(parseOverlayParams(`?overlay&helper=${CODE}&hport=80`).helper).toBeUndefined()
+    expect(parseOverlayParams('?overlay').helper).toBeUndefined()
+  })
+
+  it('round-trip through the short link', () => {
+    const url = buildObsUrl('https://x.test/', 'tynza', null, { code: CODE, port: 9000 })
+    expect(parseOverlayParams(new URL(url).search)).toMatchObject({
+      profile: 'tynza',
+      helper: { code: CODE, port: 9000 },
+    })
+  })
+
+  it('are read from the data baked into an overlay file', () => {
+    expect(parseEmbedded({ token: 'g.abc', background: null, helper: { code: CODE, port: 8765 } })).toEqual({
+      token: 'g.abc',
+      background: null,
+      helper: { code: CODE, port: 8765 },
+    })
+    expect(parseEmbedded({ token: 'g.abc', helper: { code: 'bad' } })?.helper).toBeUndefined()
+    expect(parseEmbedded({ token: 'g.abc', helper: 'nope' })?.helper).toBeUndefined()
   })
 })

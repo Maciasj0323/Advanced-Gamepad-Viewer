@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import AdvancedOptions from './AdvancedOptions'
 import { useArtwork, useArtworkUrls } from './artworkStore'
 import { CONTROLLER_LIST, CONTROLLERS } from './controllers'
+import HelperCard from './HelperCard'
 import ObsLink from './ObsLink'
 import Overlay from './Overlay'
 import ProfileBackup from './ProfileBackup'
@@ -182,10 +183,11 @@ export default function Studio() {
           </div>
         </section>
 
-        <ObsLink profileName={active.name} />
+        <ObsLink profile={active} />
       </main>
 
       <ProfileBackup active={active} />
+      <HelperCard profile={active} />
       <AdvancedOptions profile={active} />
 
       {floating && !overlayVisible && (
